@@ -9,7 +9,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.alanmarksp.marvelapimiddleware.adapters.CharacterAdapter;
 import com.alanmarksp.marvelapimiddleware.loaders.CharacterLoader;
@@ -22,6 +21,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     public static final String PAGE_KEY = "page";
+    public static final int PAGE_SIZE = 10;
     private int currentPage = 0;
 
     private List<Character> characters;
@@ -30,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private CharacterLoader characterLoader;
 
     private ProgressBar progressBar;
+    private Button previousButton;
+    private Button nextButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
 
         charactersListView.setAdapter(characterAdapter);
 
-        Button previousButton = (Button) findViewById(R.id.previous_button);
-        Button nextButton = (Button) findViewById(R.id.next_button);
+        previousButton = (Button) findViewById(R.id.previous_button);
+        nextButton = (Button) findViewById(R.id.next_button);
 
         if (savedInstanceState != null) {
             currentPage = savedInstanceState.getInt(PAGE_KEY);
@@ -100,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
             try {
                 return characterLoader.loadPage(ints[0]);
             } catch (IOException e) {
-                Toast.makeText(getApplicationContext(), "Error al cargar la pagina", Toast.LENGTH_SHORT).show();
                 Log.d("Debug", "doInBackground: " + e.getMessage());
             }
             return null;
@@ -115,15 +116,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadNextPage() {
-        currentPage++;
-        new LoadCharactersTask().execute(currentPage);
+            currentPage++;
+            new LoadCharactersTask().execute(currentPage);
     }
 
     private void loadPreviousPage() {
-        if (currentPage > 0) {
             currentPage--;
             new LoadCharactersTask().execute(currentPage);
-        }
     }
 
     private void loadCharacters(List<Character> characters) {
@@ -134,5 +133,19 @@ public class MainActivity extends AppCompatActivity {
         this.characters.clear();
         this.characters.addAll(characters);
         characterAdapter.notifyDataSetChanged();
+
+        if (characters.size() < PAGE_SIZE) {
+            nextButton.setEnabled(false);
+        }
+        else {
+            nextButton.setEnabled(true);
+        }
+
+        if (currentPage == 0) {
+            previousButton.setEnabled(false);
+        }
+        else {
+            previousButton.setEnabled(true);
+        }
     }
 }
